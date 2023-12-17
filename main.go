@@ -317,8 +317,8 @@ var (
 )
 
 func formatName(name string) string {
-	noEmoji := emojiRegex.ReplaceAllString(name, "")
-	mergedSpaces := spaceRegex.ReplaceAllString(noEmoji, " ")
+	//noEmoji := emojiRegex.ReplaceAllString(name, "")
+	//mergedSpaces := spaceRegex.ReplaceAllString(noEmoji, " ")
 	return strings.TrimSpace(name)
 }
 
