@@ -5,6 +5,7 @@ import (
 	"encoding/csv"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"io"
 	"net"
 	"net/http"
@@ -291,7 +292,7 @@ func TestProxy(name string, proxy C.Proxy, downloadSize int, timeout time.Durati
 	downloadTime := time.Since(start) - ttfb
 	bandwidth := float64(written) / downloadTime.Seconds()
 	//get node ip
-	resp, err := client.Get(fmt.Sprintf(*whatismyip))
+	resp, err = client.Get(fmt.Sprintf(*whatismyip))
 	if err != nil {
 		return &Result{name, -1, -1 , ""}, 0
 	}
@@ -305,7 +306,7 @@ func TestProxy(name string, proxy C.Proxy, downloadSize int, timeout time.Durati
   		return &Result{name, -1, -1, ""}, 0
  	}
 
-	node_ipaddress = string(body)
+	node_ipaddress := string(body)
 	
 	return &Result{name, bandwidth, ttfb, node_ipaddress}, written
 }
