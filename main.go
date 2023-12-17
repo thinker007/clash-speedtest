@@ -46,6 +46,7 @@ type Result struct {
 	Name      string
 	Bandwidth float64
 	TTFB      time.Duration
+	Node_ipaddress string
 }
 
 var (
@@ -104,7 +105,7 @@ func main() {
 
 	format := "%s%-42s\t%-12s\t%-12s\033[0m\n"
 
-	fmt.Printf(format, "", "节点", "带宽", "延迟")
+	fmt.Printf(format, "", "节点", "带宽", "延迟","节点ip地址")
 	for _, name := range filteredProxies {
 		proxy := allProxies[name]
 		switch proxy.Type() {
@@ -134,7 +135,7 @@ func main() {
 		default:
 			log.Fatalln("Unsupported sort field: %s", *sortField)
 		}
-		fmt.Printf(format, "", "节点", "带宽", "延迟")
+		fmt.Printf(format, "", "节点", "带宽", "延迟",,"节点ip地址")
 		for _, result := range results {
 			result.Printf(format)
 		}
@@ -221,6 +222,7 @@ func TestProxyConcurrent(name string, proxy C.Proxy, downloadSize int, timeout t
 	chunkSize := downloadSize / concurrentCount
 	totalTTFB := int64(0)
 	downloaded := int64(0)
+	node_ipaddress := string("")
 
 	var wg sync.WaitGroup
 	start := time.Now()
@@ -231,7 +233,9 @@ func TestProxyConcurrent(name string, proxy C.Proxy, downloadSize int, timeout t
 			if w != 0 {
 				atomic.AddInt64(&downloaded, w)
 				atomic.AddInt64(&totalTTFB, int64(result.TTFB))
+				node_ipaddress = result.Node_ipaddress
 			}
+			
 			wg.Done()
 		}(i)
 	}
@@ -242,6 +246,7 @@ func TestProxyConcurrent(name string, proxy C.Proxy, downloadSize int, timeout t
 		Name:      name,
 		Bandwidth: float64(downloaded) / downloadTime.Seconds(),
 		TTFB:      time.Duration(totalTTFB / int64(concurrentCount)),
+		Node_ipaddress: node_ipaddress
 	}
 
 	return result
@@ -271,22 +276,32 @@ func TestProxy(name string, proxy C.Proxy, downloadSize int, timeout time.Durati
 	start := time.Now()
 	resp, err := client.Get(fmt.Sprintf(*livenessObject, downloadSize))
 	if err != nil {
-		return &Result{name, -1, -1}, 0
+		return &Result{name, -1, -1 , ""}, 0
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode-http.StatusOK > 100 {
-		return &Result{name, -1, -1}, 0
+		return &Result{name, -1, -1, ""}, 0
 	}
 	ttfb := time.Since(start)
 
 	written, _ := io.Copy(io.Discard, resp.Body)
 	if written == 0 {
-		return &Result{name, -1, -1}, 0
+		return &Result{name, -1, -1, ""}, 0
 	}
 	downloadTime := time.Since(start) - ttfb
 	bandwidth := float64(written) / downloadTime.Seconds()
-
-	return &Result{name, bandwidth, ttfb}, written
+	//get node ip
+	resp, err := client.Get(fmt.Sprintf(*whatismyip))
+	if err != nil {
+		return &Result{name, -1, -1 , ""}, 0
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode-http.StatusOK > 100 {
+		return &Result{name, -1, -1, ""}, 0
+	}
+	node_ipaddress = resp.Body
+	
+	return &Result{name, bandwidth, ttfb, node_ipaddress}, written
 }
 
 var (
@@ -364,7 +379,7 @@ func writeToCSV(filePath string, results []Result) error {
 	csvFile.WriteString("\xEF\xBB\xBF")
 
 	csvWriter := csv.NewWriter(csvFile)
-	err = csvWriter.Write([]string{"节点", "带宽 (MB/s)", "延迟 (ms)"})
+	err = csvWriter.Write([]string{"节点", "带宽 (MB/s)", "延迟 (ms)", "节点ip地址"})
 	if err != nil {
 		return err
 	}
@@ -373,6 +388,7 @@ func writeToCSV(filePath string, results []Result) error {
 			result.Name,
 			fmt.Sprintf("%.2f", result.Bandwidth/1024/1024),
 			strconv.FormatInt(result.TTFB.Milliseconds(), 10),
+			result.Node_ipaddress
 		}
 		err = csvWriter.Write(line)
 		if err != nil {
