@@ -246,7 +246,7 @@ func TestProxyConcurrent(name string, proxy C.Proxy, downloadSize int, timeout t
 		Name:      name,
 		Bandwidth: float64(downloaded) / downloadTime.Seconds(),
 		TTFB:      time.Duration(totalTTFB / int64(concurrentCount)),
-		Node_ipaddress: node_ipaddress
+		Node_ipaddress: node_ipaddress,
 	}
 
 	return result
@@ -394,7 +394,7 @@ func writeToCSV(filePath string, results []Result) error {
 			result.Name,
 			fmt.Sprintf("%.2f", result.Bandwidth/1024/1024),
 			strconv.FormatInt(result.TTFB.Milliseconds(), 10),
-			result.Node_ipaddress
+			result.Node_ipaddress,
 		}
 		err = csvWriter.Write(line)
 		if err != nil {
