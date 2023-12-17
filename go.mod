@@ -1,4 +1,4 @@
-module github.com/faceair/clash-speedtest
+module github.com/thinker007/clash-speedtest
 
 go 1.20
 
