@@ -104,7 +104,7 @@ func main() {
 	filteredProxies := filterProxies(*filterRegexConfig, allProxies)
 	results := make([]Result, 0, len(filteredProxies))
 
-	format := "%s%-42s\t%-12s\t%-12s\033[0m\n"
+	format := "%s%-42s\t%-12s\t%-12s\t%-12s\033[0m\n"
 
 	fmt.Printf(format, "", "节点", "带宽", "延迟","节点ip地址")
 	for _, name := range filteredProxies {
