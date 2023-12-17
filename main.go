@@ -135,7 +135,7 @@ func main() {
 		default:
 			log.Fatalln("Unsupported sort field: %s", *sortField)
 		}
-		fmt.Printf(format, "", "节点", "带宽", "延迟",,"节点ip地址")
+		fmt.Printf(format, "", "节点", "带宽", "延迟", "节点ip地址")
 		for _, result := range results {
 			result.Printf(format)
 		}
