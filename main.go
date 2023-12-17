@@ -212,7 +212,7 @@ func (r *Result) Printf(format string) {
 	} else if r.Bandwidth > 1024*1024*10 {
 		color = green
 	}
-	fmt.Printf(format, color, formatName(r.Name), formatBandwidth(r.Bandwidth), formatMilliseconds(r.TTFB))
+	fmt.Printf(format, color, formatName(r.Name), formatBandwidth(r.Bandwidth), formatMilliseconds(r.TTFB),formatIP(r.Node_ipaddress))
 }
 
 func TestProxyConcurrent(name string, proxy C.Proxy, downloadSize int, timeout time.Duration, concurrentCount int) *Result {
@@ -319,7 +319,11 @@ var (
 func formatName(name string) string {
 	noEmoji := emojiRegex.ReplaceAllString(name, "")
 	mergedSpaces := spaceRegex.ReplaceAllString(noEmoji, " ")
-	return strings.TrimSpace(mergedSpaces)
+	return strings.TrimSpace(name)
+}
+
+func formatIP(ip string) string {
+	return strings.TrimSpace(ip)
 }
 
 func formatBandwidth(v float64) string {
