@@ -26,6 +26,8 @@ import (
 
 var (
 	livenessObject     = flag.String("l", "https://speed.cloudflare.com/__down?bytes=%d", "liveness object, support http(s) url, support payload too")
+	whatismyip = flag.String("l", "http://whatismyip.akamai.com", "获取节点ip")
+	
 	configPathConfig   = flag.String("c", "", "configuration file path, also support http(s) url")
 	filterRegexConfig  = flag.String("f", ".*", "filter proxies by name, use regexp")
 	downloadSizeConfig = flag.Int("size", 1024*1024*100, "download size for testing proxies")
