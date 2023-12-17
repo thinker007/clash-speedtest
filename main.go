@@ -299,7 +299,13 @@ func TestProxy(name string, proxy C.Proxy, downloadSize int, timeout time.Durati
 	if resp.StatusCode-http.StatusOK > 100 {
 		return &Result{name, -1, -1, ""}, 0
 	}
-	node_ipaddress = resp.Body
+	body, err := ioutil.ReadAll(resp.Body)
+ 	if err != nil {
+  		fmt.Println("Error reading response body:", err)
+  		return &Result{name, -1, -1, ""}, 0
+ 	}
+
+	node_ipaddress = string(body)
 	
 	return &Result{name, bandwidth, ttfb, node_ipaddress}, written
 }
